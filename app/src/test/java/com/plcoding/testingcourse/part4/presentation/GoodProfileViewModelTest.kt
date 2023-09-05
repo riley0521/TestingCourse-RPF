@@ -7,6 +7,12 @@ import com.plcoding.testingcourse.part4.data.FakeAnalyticsLogger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+/**
+ * What is mutation testing?
+ *
+ * Intentionally breaking the production code to see if the test catches the bug.
+ * Accidentally writing tests that always pass is normal. That is why we have mutation testing.
+ */
 internal class GoodProfileViewModelTest {
 
     private lateinit var analytics: FakeAnalyticsLogger
