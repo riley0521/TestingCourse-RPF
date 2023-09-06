@@ -1,9 +1,10 @@
 package com.plcoding.testingcourse.part4.presentation
 
-import com.plcoding.testingcourse.part4.domain.AnalyticsLogger
-import com.plcoding.testingcourse.part4.domain.LogParam
-import org.junit.jupiter.api.Assertions.*
+import assertk.assertThat
+import assertk.assertions.isNotNull
+import com.plcoding.testingcourse.part4.data.FakeAnalyticsLogger
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class GoodProfileViewModelTest {
 
@@ -12,9 +13,14 @@ internal class GoodProfileViewModelTest {
     @BeforeEach
     fun setUp() {
         viewModel = GoodProfileViewModel(
-            analytics = object : AnalyticsLogger {
-                override fun logEvent(key: String, vararg params: LogParam<Any>) = Unit
-            }
+            analytics = FakeAnalyticsLogger()
         )
+    }
+
+    @Test
+    fun `Test save profile infoMessage not null`() {
+        viewModel.saveProfile()
+
+        assertThat(viewModel.state.infoMessage).isNotNull()
     }
 }

@@ -1,10 +1,11 @@
-package com.plcoding.testingcourse.shopping.domain
+package com.plcoding.testingcourse.core.domain
 
 import assertk.assertFailure
 import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
-import com.plcoding.testingcourse.core.domain.Product
-import com.plcoding.testingcourse.core.domain.ShoppingCart
+import com.plcoding.testingcourse.core.data.ShoppingCartCacheFake
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -14,10 +15,28 @@ import org.junit.jupiter.params.provider.CsvSource
 internal class ShoppingCartTest {
 
     private lateinit var cart: ShoppingCart
+    private lateinit var cacheFake: ShoppingCartCacheFake
 
     @BeforeEach
     fun setUp() {
-        cart = ShoppingCart()
+        cacheFake = ShoppingCartCacheFake()
+        cart = ShoppingCart(cacheFake)
+    }
+
+    @Test
+    fun `Test products are saved in cache`() {
+        val product = Product(
+            id = 1,
+            name = "Apple",
+            price = 5.0
+        )
+
+        cart.addProduct(product, 2)
+
+        val productsFromCache = cacheFake.loadCart()
+
+        assertThat(productsFromCache).hasSize(2)
+        assertThat(productsFromCache).contains(product)
     }
 
     @ParameterizedTest
@@ -33,8 +52,8 @@ internal class ShoppingCartTest {
     ) {
         // GIVEN
         val product = Product(
-            id = 0,
-            name = "Ice cream",
+            id = 1,
+            name = "Apple",
             price = 5.0
         )
         cart.addProduct(product, quantity)
@@ -49,8 +68,8 @@ internal class ShoppingCartTest {
     @RepeatedTest(100)
     fun `Add product with negative quantity, throws Exception`() {
         val product = Product(
-            id = 0,
-            name = "Ice cream",
+            id = 1,
+            name = "Apple",
             price = 5.0
         )
 
@@ -62,8 +81,8 @@ internal class ShoppingCartTest {
     @Test
     fun `isValidProduct returns invalid for not existing product`() {
         val product = Product(
-            id = 1345,
-            name = "Ice cream",
+            id = 123,
+            name = "Apple",
             price = 5.0
         )
         cart.addProduct(product, 4)
