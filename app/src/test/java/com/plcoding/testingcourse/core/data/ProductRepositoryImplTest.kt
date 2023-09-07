@@ -11,10 +11,14 @@ import io.mockk.mockk
 import io.mockk.mockkConstructor
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import retrofit2.HttpException
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 
 internal class ProductRepositoryImplTest {
 
@@ -22,15 +26,44 @@ internal class ProductRepositoryImplTest {
     private lateinit var productApi: ProductApi
     private lateinit var analyticsLogger: AnalyticsLogger
 
+    private lateinit var mockWebServer: MockWebServer
+
     @BeforeEach
     fun setup() {
-        productApi = mockk()
+        mockWebServer = MockWebServer()
+
+        productApi = Retrofit.Builder()
+            .addConverterFactory(GsonConverterFactory.create())
+            .baseUrl(mockWebServer.url("/"))
+            .build()
+            .create()
+
         analyticsLogger = mockk(relaxed = true)
         repository = ProductRepositoryImpl(productApi, analyticsLogger)
     }
 
     @Test
-    fun `Response error, exception is logged`() = runBlocking<Unit> {
+    fun `Response error, exception is logged with MockWebServer`() = runBlocking {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(404)
+        )
+
+        val result = repository.purchaseProducts(listOf())
+
+        assertThat(result.isFailure).isTrue()
+
+        verify {
+            analyticsLogger.logEvent(
+                "http_error",
+                LogParam("code", 404),
+                LogParam("message", "Client Error")
+            )
+        }
+    }
+
+    @Test
+    fun `Response error, exception is logged`() = runBlocking {
 //        every { analyticsLogger.logEvent(any(), *anyVararg()) } answers {
 //            println("Analytics is called.")
 //        }
