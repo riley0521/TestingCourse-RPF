@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 interface UserApi {
 
-    @GET("/user")
+    @GET("/users/{id}")
     suspend fun getUser(@Path("id") id: String): User?
 
     @GET("/posts")
